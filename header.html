@@ -28,8 +28,16 @@
     color:rgba(245,245,247,0.6);}
   .sub{font-size:clamp(10px,2.4vh + 0.4vw,16px);color:rgba(245,245,247,0.6);white-space:nowrap;
     overflow:hidden;text-overflow:ellipsis;}
-  .sunset .big{color:#ffb070;}
-  .sunset .big .ampm{color:rgba(255,176,112,0.7);}
+  .sun{gap:clamp(4px,4vh,18px);}
+  .row{display:flex;align-items:center;justify-content:flex-start;gap:clamp(12px,3vw,40px);}
+  .row .label{min-width:0;width:11em;flex:none;}
+  .mid{font-size:clamp(18px,11vh + 0.6vw,52px);font-weight:600;letter-spacing:-0.03em;
+    line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;}
+  .mid .ampm{font-size:0.42em;font-weight:500;letter-spacing:0;margin-left:0.18em;}
+  .rise .mid{color:#ffd88a;} .rise .mid .ampm{color:rgba(255,216,138,0.7);}
+  .set .mid{color:#ffb070;} .set .mid .ampm{color:rgba(255,176,112,0.7);}
+  .note{display:block;margin-top:0.45em;letter-spacing:0.02em;text-transform:none;font-weight:500;
+    color:rgba(245,245,247,0.45);}
 </style>
 </head>
 <body>
@@ -41,10 +49,15 @@
     <div class="sub" id="date"></div>
   </div>
   <div class="divider"></div>
-  <div class="panel sunset">
-    <div class="label">Sunset</div>
-    <div class="big" id="sunset">--:--</div>
-    <div class="sub" id="sunsub"></div>
+  <div class="panel sun">
+    <div class="row rise">
+      <div class="label"><span id="riselbl">Sunrise</span><span class="note" id="risenote"></span></div>
+      <div class="mid" id="sunrise">--:--</div>
+    </div>
+    <div class="row set">
+      <div class="label"><span id="setlbl">Sunset</span><span class="note" id="setnote"></span></div>
+      <div class="mid" id="sunset">--:--</div>
+    </div>
   </div>
 </div>
 <script>
@@ -95,19 +108,28 @@ function tick(){
     {timeZone:TZ, weekday:'long', month:'long', day:'numeric'}).format(now);
 
   var ymd = localYMD(now);
+  var rise = sunEvent(ymd[0], ymd[1], ymd[2], true);
   var set = sunEvent(ymd[0], ymd[1], ymd[2], false);
-  var sub;
-  if (now < set) {
-    sub = 'Golden hour in ' + dur(Math.max(0, set - now - 3600000)) + ' · sets in ' + dur(set - now);
-    if (set - now <= 3600000) sub = 'Golden hour now · sets in ' + dur(set - now);
-  } else {
-    var t = new Date(now.getTime() + 86400000), ty = localYMD(t);
-    var rise = sunEvent(ty[0], ty[1], ty[2], true);
+  var riseLbl = 'Sunrise', setLbl = 'Sunset', riseNote = '', setNote = '';
+  if (now >= set) {
+    // After sunset, show tomorrow's times
+    var ty = localYMD(new Date(now.getTime() + 86400000));
+    rise = sunEvent(ty[0], ty[1], ty[2], true);
     set = sunEvent(ty[0], ty[1], ty[2], false);
-    sub = 'Tomorrow · sunrise ' + fmtTime(rise).replace(/<[^>]+>/g, ' ');
+    riseLbl = 'Sunrise'; setLbl = 'Sunset';
+    riseNote = 'Tomorrow'; setNote = 'Tomorrow';
+  } else if (now < rise) {
+    riseNote = 'In ' + dur(rise - now);
+  } else {
+    var left = set - now;
+    setNote = left <= 3600000 ? 'Golden hour now' : 'Golden hour in ' + dur(left - 3600000);
   }
+  document.getElementById('sunrise').innerHTML = fmtTime(rise);
   document.getElementById('sunset').innerHTML = fmtTime(set);
-  document.getElementById('sunsub').textContent = sub;
+  document.getElementById('riselbl').textContent = riseLbl;
+  document.getElementById('setlbl').textContent = setLbl;
+  document.getElementById('risenote').textContent = riseNote;
+  document.getElementById('setnote').textContent = setNote;
 }
 tick(); setInterval(tick, 1000);
 if (typeof module !== 'undefined') module.exports = {sunEvent: sunEvent};
