@@ -120,9 +120,6 @@ function tick(){
     riseNote = 'Tomorrow'; setNote = 'Tomorrow';
   } else if (now < rise) {
     riseNote = 'In ' + dur(rise - now);
-  } else {
-    var left = set - now;
-    setNote = left <= 3600000 ? 'Golden hour now' : 'Golden hour in ' + dur(left - 3600000);
   }
   document.getElementById('sunrise').innerHTML = fmtTime(rise);
   document.getElementById('sunset').innerHTML = fmtTime(set);
