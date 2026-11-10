@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nashville Sunset</title>
 <style>
-html,body{margin:0;padding:0;height:100%;background:transparent;overflow:hidden;}
-body{display:flex;align-items:center;justify-content:center;}
-#wrap{width:100%;max-width:100%;box-sizing:border-box;padding:4px;}
+html,body{margin:0;padding:0;height:100%;width:100%;background:transparent;overflow:hidden;}
+#wrap{position:absolute;top:0;left:0;width:100%;transform-origin:top left;}
 </style>
 </head>
 <body>
@@ -15,5 +14,30 @@ body{display:flex;align-items:center;justify-content:center;}
 <div id="JFWebsiteWidget-01a1c7540de8700084a689a63b09e6ea36c5"></div>
 </div>
 <script src="https://www.jotform.com/website-widgets/embed/01a1c7540de8700084a689a63b09e6ea36c5" defer></script>
+<script>
+// Scale the widget down so it always fits inside the Notion embed box without scrolling.
+(function(){
+  var wrap = document.getElementById('wrap');
+  var last = '';
+  function fit(){
+    var vw = window.innerWidth, vh = window.innerHeight;
+    wrap.style.transform = 'none';
+    wrap.style.width = vw + 'px';
+    var s = 1;
+    for (var i = 0; i < 4; i++) {
+      var h = wrap.scrollHeight;
+      if (!h) return;
+      s = Math.min(1, vh / h);
+      wrap.style.width = (vw / s) + 'px';
+    }
+    var t = 'scale(' + s + ')';
+    if (t !== last) { last = t; }
+    wrap.style.transform = t;
+  }
+  window.addEventListener('resize', fit);
+  setInterval(fit, 1000);
+  fit();
+})();
+</script>
 </body>
 </html>
